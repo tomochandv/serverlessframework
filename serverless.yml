@@ -1,0 +1,42 @@
+service: solab
+
+custom:
+  STAGE: ${self:provider.stage} # 현재 스테이지 별로 데이터베이스 접속 정보를 달리하기 위함
+  env: ${file(./env/${opt:stage,'dev'}.json)} # 환경변수 정보 JSON 파일을 불러온다.
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ap-northeast-2
+  apiName: logs
+  stage: ${opt:stage, 'dev'} # -s 옵션을 받으면 사용하고, 그렇지 않으면 기본 dev 스테이지 사용
+  environment:
+    STAGE: ${self:provider.stage}
+    MONGO: ${self:custom.env.mongo}
+  timeout: 300
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+functions:
+  api:
+    handler: src/index.handler
+    events:
+      - http:
+          path: /{proxy+}
+          method: any
+          cors: true
+      - http:
+          path: /{proxy+}
+          method: post
+          cors: true
+      - http:
+          path: /{proxy+}
+          method: get
+          cors: true
+      - http:
+          path: /{proxy+}
+          method: put
+          cors: true
+      - http:
+          path: /{proxy+}
+          method: delete
+          cors: true
